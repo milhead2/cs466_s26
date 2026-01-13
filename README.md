@@ -14,6 +14,8 @@ It's not necessary that you use ```src``` as your parent directory but pick a di
 
 If you experiance issues in lab it will help me isolate where the issue lies.  It 'should' also make all my ```make``` and ```cmake``` files work straight off without modification.
 
+NOTE: If the system arm-none-eabi compiler is installed in you /usr/bin or elsewhere the compiler directory here will not be used.
+
 ![Capture](https://user-images.githubusercontent.com/19733331/150585134-7ebbc1ad-c76b-4c19-bdd8-8922a14eacbe.JPG)
 
 You will need git installed and possibly other applications as well (git, cmake, ) use ```sudo apt install``` for missing packages
@@ -59,11 +61,11 @@ Build Environment Installation Steps
 	- ``` arm-none-eabi-gcc --version```
 	- Should produce the output similar to below, Your version may vary...
 		```
-    $ arm-none-eabi-gcc --version
-    arm-none-eabi-gcc (15:13.2.rel1-2) 13.2.1 20231009
-    Copyright (C) 2023 Free Software Foundation, Inc.
-    This is free software; see the source for copying conditions.  There is NO
-    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+      	$ arm-none-eabi-gcc --version
+   		arm-none-eabi-gcc (15:13.2.rel1-2) 13.2.1 20231009
+  		Copyright (C) 2023 Free Software Foundation, Inc.
+  		This is free software; see the source for copying conditions.  There is NO
+  		warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 		```
 - Build the SDK and examples dir.  This may require additional software installs...  The compiler install is below.
     - ```cd .../src/pico/pico-examples```
@@ -99,8 +101,9 @@ Build The Provided Lab One Code
 		
 ## FreeRTOS and the following is only used for Lab2 and beyond... (*..In yer best Buzz Lightyear voice..*)
 
-Add FreeRTOS to directory tree
+Don't do this yet, I'll verify the URL's and process before LAB2
 ---------------------------
+Add FreeRTOS to directory tree
 
 - In order to build lab2 and later projects you will need to add the latest freertos directory to your dev disk.  
 	- Download the freertos image from https://www.freertos.org/lts-libraries.html
