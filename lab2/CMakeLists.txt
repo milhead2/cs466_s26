@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 #
 # For CS466 my labs and documentation expect all class material to be based off a 
-# single directory.  In my case thei si ${HOME}/src You are free to change this to match 
+# single directory.  In my case thei is ${HOME}/src You are free to change this to match 
 # your environment.
 #
 set(MY_ROOT_DIR $ENV{HOME}/src)
@@ -27,7 +27,7 @@ else()
 endif()
 
 #
-# The pick build tools are a liuttle odd but make for a better cmake file below.
+# The pico build tools are a liuttle odd but make for a better cmake file below.
 # generally cross-compile cmake systems that I've used int he past use a tools file 
 # as part of the command line.. (.e.g cmake -DCMAKE_TOOLCHAIN_FILE="../armgcc.cmake" ) 
 # but the cmake foolery in this included file sets up most of the environment.

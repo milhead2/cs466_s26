@@ -1,8 +1,23 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+#
+# For CS466 my labs and documentation expect all class material to be based off a 
+# single directory.  In my case thei is ${HOME}/src You are free to change this to match 
+# your environment.
+#
+set(MY_ROOT_DIR $ENV{HOME}/src)
+message(STATUS "Using project ROOT dir = ${MY_ROOT_DIR}")
+
+
+#
+# The pico build tools are a liuttle odd but make for a better cmake file below.
+# generally cross-compile cmake systems that I've used int he past use a tools file 
+# as part of the command line.. (.e.g cmake -DCMAKE_TOOLCHAIN_FILE="../armgcc.cmake" ) 
+# but the cmake foolery in this included file sets up most of the environment.
+#
 message(STATUS "Include pico_sdk_import.cmake")
-include(../../pico/pico-sdk/external/pico_sdk_import.cmake)
+include(${MY_ROOT_DIR}/pico/pico-sdk/external/pico_sdk_import.cmake)
 
 message(STATUS "Includes Complete")
 message(STATUS "    gcc = ${CMAKE_C_COMPILER}")
