@@ -22,10 +22,20 @@ if(ENABLE_PICO_2)
     set(PICO_BOARD pico2)
     set(PICO_PLATFORM rp2350-arm-s)
     set(destination_file "/media/$ENV{USER}/RP2350")
+    set(FREERTOS_PORT_DIR portable/GCC/ARM_CM33)
+    set(FREERTOS_PORT GCC_ARM_CM33)
 else()
+    set(PICO_BOARD pico)        # or pico_w / pico2 / etc.
+    set(PICO_PLATFORM rp2040)   # or rp2350 if using Pico 2
     set(destination_file "/media/$ENV{USER}/RPI-RP2")
+    set(FREERTOS_PORT_DIR portable/ThirdParty/GCC/RP2040)
+    set(FREERTOS_PORT GCC_ARM_CM0)
 endif()
 
+# Enable stdio over USB + UART (very common choice)
+#set(PICO_DEFAULT_BINARY_INFO 1)
+#set(PICO_STDIO_USB 1)
+#set(PICO_STDIO_UART 0)      # Provides Serial on Board Pins 1 and 2
 #
 # The pico build tools are a liuttle odd but make for a better cmake file below.
 # generally cross-compile cmake systems that I've used int he past use a tools file 
@@ -35,14 +45,8 @@ endif()
 include(${MY_ROOT_DIR}/pico/pico-sdk/external/pico_sdk_import.cmake)
 
 #
-# Setting up $FREERTOS_SRC_DIR to point to the FreeRTOS distrobution that you have on your build machine.
-# I personally have 10 or 12 Downrev versions of FreeRTOS installed on my workstation so that I never have to 
-# monkey with updating older projects.
-#
-set(FREERTOS_SRC_DIR ${MY_ROOT_DIR}/FreeRTOSv202212.01/FreeRTOS/Source)
-#set(FREERTOS_SRC_DIR ${MY_ROOT_DIR}/FreeRTOS-LTS/FreeRTOS/FreeRTOS-Kernel)
+set(FREERTOS_KERNEL_PATH ${MY_ROOT_DIR}/FreeRTOS-LTS/FreeRTOS/FreeRTOS-Kernel)
 
-#
 # Set the cmake 'Project'.  This line sets up the cmake target and does an implicent define of PROJECT_NAME
 # that I use below to not have to put the 'lab2' project on every definition.  
 #
@@ -76,6 +80,28 @@ endif()
 #
 pico_sdk_init()
 
+# Option A: You git submodule'd FreeRTOS into lib/FreeRTOS-Kernel
+#           (most common & clean approach)
+
+#add_library(freertos_kernel INTERFACE)
+
+#target_sources(freertos_kernel INTERFACE
+#    # Core kernel
+#    ${FREERTOS_KERNEL_PATH}/tasks.c
+#    ${FREERTOS_KERNEL_PATH}/queue.c
+#    ${FREERTOS_KERNEL_PATH}/list.c
+#    ${FREERTOS_KERNEL_PATH}/timers.c
+#    ${FREERTOS_KERNEL_PATH}/portable/MemMang/heap_4.c   # ← most common choice
+#
+#    # RP2040 / RP2350 port (choose GCC)
+#    ${FREERTOS_KERNEL_PATH}/${FREERTOS_PORT_DIR}/port.c
+#)
+
+#target_include_directories(freertos_kernel INTERFACE
+#    ${FREERTOS_KERNEL_PATH}/include
+#    ${FREERTOS_KERNEL_PATH}/${FREERTOS_PORT_DIR}
+#    ${CMAKE_CURRENT_LIST_DIR}/      # ← for your own FreeRTOSConfig.h
+#)
 #
 # I'm not terriably happy with the default options that the Pico folks choose...  I prefer to set warnings as errors then 
 # disable specific warnings as theyu have done below.  When you perform the make you can add the command line option 
@@ -90,38 +116,12 @@ add_compile_options(-Wall
         #-Wno-array-bounds    # pico libraries really blow this
         )
 
+#if (NOT FREERTOS_KERNEL_PATH AND NOT DEFINED ENV{FREERTOS_KERNEL_PATH})
+##    message("Skipping FreeRTOS examples as FREERTOS_KERNEL_PATH not defined")
+#    return()
+#endif()
 
-#
-# This builds a freertos library rather than just adding all the FreeRTOS modules to the project build..
-# adding libraries to your project can both add complexity as well as clairity but as projects get bigger 
-# they become more helpful.
-#
-if(ENABLE_PICO_2)
-        set(FREERTOS_ARCH_DIR ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM33_NTZ/non_secure)
-else()
-        set(FREERTOS_ARCH_DIR ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM0)
-endif()
-
-add_library(freertos
-        ${FREERTOS_SRC_DIR}/event_groups.c
-        ${FREERTOS_SRC_DIR}/list.c
-        ${FREERTOS_SRC_DIR}/queue.c
-        ${FREERTOS_SRC_DIR}/stream_buffer.c
-        ${FREERTOS_SRC_DIR}/tasks.c
-        ${FREERTOS_SRC_DIR}/timers.c
-        ${FREERTOS_SRC_DIR}/portable/MemMang/heap_3.c
-        ${FREERTOS_ARCH_DIR}/port.c
-        ${FREERTOS_ARCH_DIR}/portasm.c
-)
-
-#
-# add any specialk include paths that are unique to the FreeRTOS library build.
-#
-target_include_directories(freertos PUBLIC
-        .
-        ${FREERTOS_ARCH_DIR}
-        ${FREERTOS_SRC_DIR}/include
-)        
+include(FreeRTOS_Kernel_import.cmake)
 
 #
 # Add the long list of .c files that we have for lab2.
@@ -131,11 +131,21 @@ add_executable(${PROJECT_NAME}
         lab2.c
         )
 
-
 #
 # pull in common dependencies, This is where cmake adds the pico and freertos libraries to ourt project
 #
-target_link_libraries(${PROJECT_NAME} pico_stdlib freertos)
+target_link_libraries(${PROJECT_NAME} 
+        pico_stdlib 
+#        pico-multicore
+        FreeRTOS-Kernel-Heap4  
+        hardware_exception)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    .
+#    ${FREERTOS_KERNEL_PATH}/include
+#    ${FREERTOS_KERNEL_PATH}/${FREERTOS_PORT_DIR}/include
+) 
+
 
 # 
 # tell the pico library that you will be using usb serial and not an actual uart on the 
