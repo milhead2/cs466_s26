@@ -42,6 +42,7 @@ include(${MY_ROOT_DIR}/pico/pico-sdk/external/pico_sdk_import.cmake)
 message(STATUS "include(FreeRTOS_Kernel_import.cmake)")
 include(${FREERTOS_KERNEL}/${FREERTOS_PORT_DIR}/FreeRTOS_Kernel_import.cmake)
 
+
 # 
 # Project Definition!
 # 
@@ -60,12 +61,14 @@ add_executable(${PROJECT_NAME}
     lab2.c
     )
 
+
 # 
 # If you have extra include dirs (outside pico-sdk and FreeRTOS) add them here.
 #
 target_include_directories(${PROJECT_NAME} PRIVATE
     .
     )
+
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer

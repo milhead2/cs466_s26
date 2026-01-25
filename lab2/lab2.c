@@ -24,7 +24,7 @@ uint32_t heartbeatDelay = 500;  // ms
 
 void gpio_int_callback(uint gpio, uint32_t events_unused) 
 {
-    printf("sw1_callback: GPIO ISR %d\n", gpio);
+    printf("sw1_callback: GPIO ISR %u\n", gpio);
 
     if (gpio == SW1_PIN)
     {
