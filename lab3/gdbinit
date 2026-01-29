@@ -1,0 +1,43 @@
+#  arm-none-eabi-gdb initalization file.
+#
+#   Note: You should have a global .gdbinit in your home directory
+#         that governs gdb permissions..  In mine below I allow
+#         all modifications
+#
+#   $ cat ~/.gdbinit
+#   set auto-load safe-path /
+
+# reload the image from the .elf file
+define reload
+    monitor reset halt
+    load
+    info threads
+    monitor reset init
+end
+
+# rebuild and reload the image
+# assumes that the make file is in the current directory
+define mr
+    make
+    reload
+end
+
+# because I'm too lazy to type reload
+define re
+    reload
+end
+
+#
+# Default execution befins here
+#
+target extended-remote :3333
+set print elements 350
+set confirm off
+set pagination off
+
+re
+b main
+b _assert_failed
+
+# Turn the processor loose, You may not want to automatically run this command
+continue
