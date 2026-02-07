@@ -1,9 +1,40 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "FreeRTOS.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #include "hardware/gpio.h"
 #include "pico/stdlib.h"
+
+
+static void  
+spinDelayUs(uint32_t us)
+{
+    while(us--)
+    {
+        for (int i = 0; i < 12; i++) {
+            __asm("    nop\n");
+        }
+        __asm("    nop\n"
+              "    nop\n"
+              "    nop\n"
+              "    nop\n"
+              "    nop\n"
+              "    nop\n"
+              "    nop\n"
+              "    nop\n");
+    }
+}
+
+static void 
+spinDelayMs(uint32_t ms)
+{
+    while(ms--)
+    {
+        spinDelayUs(1000);
+    }
+}
 
 // Candidate for my assert Module
 void 
@@ -17,6 +48,12 @@ _assert_failed (const char *assertion, const char *file, unsigned int line)
     // Normally an IO would display:
     //   Assertion failed: expression, file filename, line line number 
     printf("Assertion Failed: %s at %s::%d\n", assertion, file, line);
+    vTaskDelay(10);
+    //vTaskSuspendAll();
+    taskENTER_CRITICAL();
+
+
+
     
     // Denergize any outputs
 
@@ -32,7 +69,7 @@ _assert_failed (const char *assertion, const char *file, unsigned int line)
     
     // turn off the LED's
     //
-    gpio_put(LED_PIN, 0);
+    gpio_put(LED_PIN, 1);
     
     //
     // Loop forever.
@@ -40,19 +77,13 @@ _assert_failed (const char *assertion, const char *file, unsigned int line)
     const uint32_t assertLoopDelayMs = 50;
     while (true) 
     {
-        gpio_put(LED_PIN, 1);
-        sleep_ms(assertLoopDelayMs);
         gpio_put(LED_PIN, 0);
-        sleep_ms(assertLoopDelayMs);
+        spinDelayMs(assertLoopDelayMs);
+        gpio_put(LED_PIN, 1);
+        spinDelayMs(assertLoopDelayMs);
     }
 }
 
-
-#pragma weak _close
-#pragma weak _lseek
-
-int _close(int file) { return -1; }
-int _lseek(int file, int ptr, int dir) { return -1; }           
                
 
 
